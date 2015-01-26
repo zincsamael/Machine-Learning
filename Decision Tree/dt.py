@@ -18,7 +18,7 @@ class Node:
     cate = None
 
 
-def parse_file(path, t):
+def parse_file(path):
     f = open(path,'r')
     if f == None:
         print 'error: file path is not correct'
@@ -40,10 +40,7 @@ def parse_file(path, t):
         dic['cls'] = data[-1]
         data_set.append(dic)
         # if int(data[-1]) == 1: count1 += 1
-
-    root = create_dt(attr_info, data_set)
-    print_tree(root, attr_info, list([]))
-    print 'Accuracy on training set ({} instances): {:.2%}%'.format(len(data_set),training(root,data_set))
+    return (attr_info, data_set)
 
 
 def print_tree(node, attr_info,stack):
@@ -78,19 +75,19 @@ def create_dt(attr_info, data_set):
 
     node = Node()
     if pos_count == 0:
-        print 'all values negative'
+        # print 'all values negative'
         node.cate = 0
         return node
     if pos_count == n:
-        print 'all values positive'
+        # print 'all values positive'
         node.cate = 1
         return node
 
     e = entropy(pos_count,n)
     max_ig = 0
-    max_ig_attr = None
-    max_pos_attr = []
-    max_all_attr = []
+    max_ig_attr = attr_info.keys()[0]
+    max_pos_attr = [0 for m in range(int(attr_info[max_ig_attr]))]
+    max_all_attr = [0 for m in range(int(attr_info[max_ig_attr]))]
     for key in attr_info.keys():
         if key == 'cls':
             continue
@@ -118,12 +115,16 @@ def create_dt(attr_info, data_set):
     attr_cnt = int(attr_info[max_ig_attr])
     node.attr_name = max_ig_attr
     node.children = list([])
+    # print '\n'
     # print node.attr_name
     # for i in range(len(data_set)):
     #     del data_set[i][max_ig_attr_idx]
     # new_attr_info = list(attr_info)
     # del attr_info[max_ig_attr]
-
+    new_attr = {}
+    for attr in attr_info:
+                if attr != max_ig_attr:
+                    new_attr[attr] = attr_info[attr]
     for m in range(attr_cnt):
         if max_pos_attr[m] == 0 or max_pos_attr[m] == max_all_attr[m]:
             child = Node()
@@ -138,7 +139,7 @@ def create_dt(attr_info, data_set):
         else:
             # print 'push '
             sub_data_set = [r for r in data_set if int(r[max_ig_attr]) == m+1]
-            if len(attr_info) == 0:
+            if len(new_attr) == 0:
                 sub_pos = 0
                 for set in sub_data_set:
                     if int(set['cls']) == 1:
@@ -153,7 +154,7 @@ def create_dt(attr_info, data_set):
                     # print 'append child classified 0'
                     node.children.append(child)
                 continue
-            node.children.append(create_dt([attr for attr in attr_info if attr != max_ig_attr], sub_data_set))
+            node.children.append(create_dt(new_attr, sub_data_set))
             # print 'pop '
 
     return node
@@ -177,16 +178,22 @@ def training(root, data):
 
 
 def main():
-  # This command-line parsing code is provided.
-  # Make a list of command line arguments, omitting the [0] element
-  # which is the script itself.
-  args = sys.argv[1:]
-  if len(args) != 2:
-    print 'usage: training_file test_file'
-    sys.exit(1)
+    # This command-line parsing code is provided.
+    # Make a list of command line arguments, omitting the [0] element
+    # which is the script itself.
+    args = sys.argv[1:]
+    if len(args) != 2:
+        print 'usage: training_file test_file'
 
-  parse_file(args[0], True)
-  # test_set = parse_file(args[1])
+    (attr_info, data_set) = parse_file(args[0])
+    root = create_dt(attr_info, data_set)
+    print_tree(root, attr_info, list([]))
+
+    print '\nAccuracy on training set ({} instances): {:.2%}'.format(len(data_set),training(root,data_set))
+    # test_set = parse_file(args[1])
+    (attr_info, data_set) = parse_file(args[1])
+    print '\nAccuracy on test set ({} instances): {:.2%}'.format(len(data_set),training(root,data_set))
+    # test_set = parse_file(args[1])
 
 
 if __name__ == '__main__':
