@@ -186,15 +186,25 @@ def main():
         print 'usage: training_file test_file'
 
     (attr_info, data_set) = parse_file(args[0])
+    (test_attr_info, test_data_set) = parse_file(args[1])
+
+    #used for problem section A) B) C)
     root = create_dt(attr_info, data_set)
     print_tree(root, attr_info, list([]))
-
     print '\nAccuracy on training set ({} instances): {:.2%}'.format(len(data_set),training(root,data_set))
-    # test_set = parse_file(args[1])
-    (attr_info, data_set) = parse_file(args[1])
-    print '\nAccuracy on test set ({} instances): {:.2%}'.format(len(data_set),training(root,data_set))
-    # test_set = parse_file(args[1])
+    per = training(root,test_data_set)
+    print '\nAccuracy on test set ({} instances): {:.2%}'.format(len(data_set), per)
 
-
+    # used for problem section D)
+    # text = ''
+    # for i in range(50,len(data_set),50):
+    #     root = create_dt(attr_info, data_set)
+    #     # print_tree(root, attr_info, list([]))
+    #
+    #     # print '\nAccuracy on training set ({} instances): {:.2%}'.format(len(data_set),training(root,data_set))
+    #     per = training(root,test_data_set)
+    #     print '\nAccuracy on test set ({} instances): {:.2%}'.format(len(data_set), per)
+    #     text += '\t' + str(per)
+    # print text
 if __name__ == '__main__':
   main()
